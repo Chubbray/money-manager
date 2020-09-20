@@ -2,7 +2,7 @@ const indexeDB = window.indexedDB;
 
 let db;
 
-const request = indexedDB.open("moneyManeger", 1);
+const request = indexedDB.open("Budget Tracker", 1);
 
 request.onupgradeneeded = function (event) {
     const db = event.target.result;
@@ -34,7 +34,7 @@ function uploadTransaction() {
 
 getAll.onsuccess = function () {
     if (getAll.result.length > 0) {
-        fetch("/routes/api", {
+        fetch("./api", {
             method: "POST",
             body: JSON.stringify(getAll.result),
             headers: {
@@ -48,8 +48,8 @@ getAll.onsuccess = function () {
                     throw new Error(serverResponse);
                 }
                 const transaction = db.transaction(["new_transaction"], "readwrite");
-                const pizzaObjectStore = transaction.objectStore("new_transaction");
-                pizzaObjectStore.clear();
+                const objectStore = transaction.objectStore("new_transaction");
+                objectStore.clear();
 
                 alert("All saved transactions have been submitted!");
             })
