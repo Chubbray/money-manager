@@ -21,40 +21,41 @@ request.onerror = function (event) {
 };
 
 function saveTransaction(record) {
-    const transaction = db.transaction(["pending"], "readwrite");
-    const objectStore = transaction.objectStore("pending");
-    objectStore.add(record);
+    const transaction = db.transaction(["new_transaction"], "readwrite");
+    const store = transaction.objectStore("new_transaction");
+    store.add(record);
 };
 
 function uploadTransaction() {
     const transaction = db.transaction(["new_transaction"], "readwrite");
-    const objectStore = transaction.objectStore("new_transaction");
-    const getAll = objectStore.getAll();
-};
+    const store = transaction.objectStore("new_transaction");
+    const getAll = store.getAll();
 
-getAll.onsuccess = function () {
-    if (getAll.result.length > 0) {
-        fetch("./api", {
-            method: "POST",
-            body: JSON.stringify(getAll.result),
-            headers: {
-                Accept: "application/json, text/plain, */*",
-                "Content-Type": "application/json"
-            }
-        })
-            .then(response => response.json())
-            .then(serverResponse => {
-                if (serverResponse.message) {
-                    throw new Error(serverResponse);
+
+    getAll.onsuccess = function () {
+        if (getAll.result.length > 0) {
+            fetch("/api/transaction/bulk", {
+                method: "POST",
+                body: JSON.stringify(getAll.result),
+                headers: {
+                    Accept: "application/json, text/plain, */*",
+                    "Content-Type": "application/json"
                 }
-                const transaction = db.transaction(["new_transaction"], "readwrite");
-                const objectStore = transaction.objectStore("new_transaction");
-                objectStore.clear();
-
-                alert("All saved transactions have been submitted!");
             })
-            .catch(err => {
-                console.log(err);
-            });
-    }
+                .then(response => response.json())
+                .then(serverResponse => {
+                    if (serverResponse.message) {
+                        throw new Error(serverResponse);
+                    }
+                    const transaction = db.transaction(["new_transaction"], "readwrite");
+                    const store = transaction.objectStore("new_transaction");
+                    store.clear();
+
+                    alert("All saved transactions have been submitted!");
+                })
+                .catch(err => {
+                    console.log(err);
+                });
+        }
+    };
 };
